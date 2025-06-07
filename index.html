@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Chatbot</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Arial", sans-serif;
+        background: linear-gradient(135deg, #0a0a0a, #1a0d2e, #16213e, #0f3460);
+        min-height: 100vh;
+        position: relative;
+        overflow-x: hidden;
+      }
+
+      /* Neon Background Effects */
+      .neon-bg {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: -1;
+      }
+
+      .neon-circle {
+        position: absolute;
+        border-radius: 50%;
+        background: radial-gradient(
+          circle,
+          rgba(147, 51, 234, 0.3),
+          transparent
+        );
+        animation: float 6s ease-in-out infinite;
+      }
+
+      .neon-circle:nth-child(1) {
+        width: 200px;
+        height: 200px;
+        top: 10%;
+        left: 80%;
+        animation-delay: 0s;
+      }
+
+      .neon-circle:nth-child(2) {
+        width: 150px;
+        height: 150px;
+        top: 60%;
+        left: 10%;
+        animation-delay: 2s;
+      }
+
+      .neon-circle:nth-child(3) {
+        width: 300px;
+        height: 300px;
+        top: 40%;
+        right: 15%;
+        animation-delay: 4s;
+      }
+
+      @keyframes float {
+        0%,
+        100% {
+          transform: translateY(0px) scale(1);
+        }
+        50% {
+          transform: translateY(-20px) scale(1.1);
+        }
+      }
+
+      /* Container */
+      .container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 20px;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* Header */
+      .header {
+        text-align: center;
+        margin-bottom: 30px;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(147, 51, 234, 0.3);
+        border-radius: 20px;
+        padding: 20px;
+        box-shadow: 0 8px 32px rgba(147, 51, 234, 0.2);
+      }
+
+      .header h1 {
+        background: linear-gradient(45deg, #9333ea, #c084fc, #a855f7);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-size: 2.5rem;
+        font-weight: bold;
+        margin-bottom: 10px;
+        text-shadow: 0 0 20px rgba(147, 51, 234, 0.5);
+      }
+
+      .header p {
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 1.1rem;
+      }
+
+      /* API Key Section */
+      .api-section {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(147, 51, 234, 0.3);
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 8px 32px rgba(147, 51, 234, 0.2);
+      }
+
+      .api-input-group {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+
+      .api-input {
+        flex: 1;
+        background: rgba(0, 0, 0, 0.5);
+        border: 1px solid rgba(147, 51, 234, 0.5);
+        border-radius: 10px;
+        padding: 12px 15px;
+        color: white;
+        font-size: 14px;
+        transition: all 0.3s ease;
+      }
+
+      .api-input:focus {
+        outline: none;
+        border-color: #a855f7;
+        box-shadow: 0 0 15px rgba(147, 51, 234, 0.4);
+      }
+
+      .api-label {
+        color: rgba(255, 255, 255, 0.9);
+        font-weight: 500;
+        margin-bottom: 8px;
+        display: block;
+      }
+
+      /* Chat Container */
+      .chat-container {
+        flex: 1;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(147, 51, 234, 0.3);
+        border-radius: 20px;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        height: 500px;
+        box-shadow: 0 8px 32px rgba(147, 51, 234, 0.2);
+      }
+
+      .chat-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 10px;
+        margin-bottom: 20px;
+        border-radius: 15px;
+        background: rgba(0, 0, 0, 0.2);
+      }
+
+      .message {
+        margin-bottom: 15px;
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+      }
+
+      .message.user {
+        flex-direction: row-reverse;
+      }
+
+      .message-content {
+        max-width: 70%;
+        padding: 12px 18px;
+        border-radius: 20px;
+        word-wrap: break-word;
+        position: relative;
+      }
+
+      .message.user .message-content {
+        background: linear-gradient(135deg, #9333ea, #a855f7);
+        color: white;
+        border-bottom-right-radius: 5px;
+        box-shadow: 0 4px 15px rgba(147, 51, 234, 0.3);
+      }
+
+      .message.bot .message-content {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(147, 51, 234, 0.2);
+        color: rgba(255, 255, 255, 0.9);
+        border-bottom-left-radius: 5px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      }
+
+      .message-avatar {
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 14px;
+      }
+
+      .message.user .message-avatar {
+        background: linear-gradient(135deg, #9333ea, #a855f7);
+        color: white;
+      }
+
+      .message.bot .message-avatar {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(147, 51, 234, 0.3);
+        color: #a855f7;
+      }
+
+      /* Input Area */
+      .input-area {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+
+      .message-input {
+        flex: 1;
+        background: rgba(0, 0, 0, 0.5);
+        border: 1px solid rgba(147, 51, 234, 0.5);
+        border-radius: 25px;
+        padding: 15px 20px;
+        color: white;
+        font-size: 16px;
+        transition: all 0.3s ease;
+      }
+
+      .message-input:focus {
+        outline: none;
+        border-color: #a855f7;
+        box-shadow: 0 0 20px rgba(147, 51, 234, 0.4);
+      }
+
+      .send-button {
+        background: linear-gradient(135deg, #9333ea, #a855f7);
+        border: none;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        color: white;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        box-shadow: 0 4px 15px rgba(147, 51, 234, 0.3);
+      }
+
+      .send-button:hover {
+        transform: scale(1.05);
+        box-shadow: 0 6px 20px rgba(147, 51, 234, 0.5);
+      }
+
+      .send-button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      /* Loading Animation */
+      .loading {
+        display: flex;
+        gap: 4px;
+        padding: 15px;
+      }
+
+      .loading-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #a855f7;
+        animation: loading 1.4s ease-in-out infinite both;
+      }
+
+      .loading-dot:nth-child(1) {
+        animation-delay: -0.32s;
+      }
+      .loading-dot:nth-child(2) {
+        animation-delay: -0.16s;
+      }
+
+      @keyframes loading {
+        0%,
+        80%,
+        100% {
+          transform: scale(0);
+        }
+        40% {
+          transform: scale(1);
+        }
+      }
+
+      /* Scrollbar */
+      .chat-messages::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      .chat-messages::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 10px;
+      }
+
+      .chat-messages::-webkit-scrollbar-thumb {
+        background: linear-gradient(135deg, #9333ea, #a855f7);
+        border-radius: 10px;
+      }
+
+      /* Responsive */
+      @media (max-width: 768px) {
+        .container {
+          padding: 10px;
+        }
+
+        .header h1 {
+          font-size: 2rem;
+        }
+
+        .chat-container {
+          height: 400px;
+        }
+
+        .message-content {
+          max-width: 85%;
+        }
+
+        .api-input-group {
+          flex-direction: column;
+          align-items: stretch;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="neon-bg">
+      <div class="neon-circle"></div>
+      <div class="neon-circle"></div>
+      <div class="neon-circle"></div>
+    </div>
+
+    <div class="container">
+      <div class="header">
+        <h1>🤖 Neon AI Chatbot</h1>
+        <p>
+          Trải nghiệm trò chuyện với AI thông minh trong giao diện tương lai
+        </p>
+      </div>
+
+      <div class="api-section">
+        <label class="api-label" for="apiKeyInput"
+          >🔑 API Key (Tùy chọn - để trống sẽ dùng key mặc định)</label
+        >
+        <div class="api-input-group">
+          <input
+            type="password"
+            id="apiKeyInput"
+            class="api-input"
+            placeholder="Nhập API Key của bạn từ OpenRouter..."
+          />
+        </div>
+      </div>
+
+      <div class="chat-container">
+        <div class="chat-messages" id="chatMessages">
+          <div class="message bot">
+            <div class="message-avatar">🤖</div>
+            <div class="message-content">
+              Xin chào! Tôi là AI Assistant của bạn. Hãy hỏi tôi bất cứ điều gì
+              bạn muốn biết! 💜
+            </div>
+          </div>
+        </div>
+
+        <div class="input-area">
+          <input
+            type="text"
+            id="messageInput"
+            class="message-input"
+            placeholder="Nhập tin nhắn của bạn..."
+            autofocus
+          />
+          <button id="sendButton" class="send-button">➤</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Default API Key (you can change this)
+      const DEFAULT_API_KEY = "_____";
+
+      const chatMessages = document.getElementById("chatMessages");
+      const messageInput = document.getElementById("messageInput");
+      const sendButton = document.getElementById("sendButton");
+      const apiKeyInput = document.getElementById("apiKeyInput");
+
+      let isLoading = false;
+
+      // Send message function
+      async function sendMessage() {
+        const message = messageInput.value.trim();
+        if (!message || isLoading) return;
+
+        // Add user message
+        addMessage(message, "user");
+        messageInput.value = "";
+
+        // Show loading
+        isLoading = true;
+        sendButton.disabled = true;
+        const loadingElement = addLoadingMessage();
+
+        try {
+          // Get API key (use input or default)
+          const apiKey = apiKeyInput.value.trim() || DEFAULT_API_KEY;
+
+          const response = await fetch(
+            "https://openrouter.ai/api/v1/chat/completions",
+            {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${apiKey}`,
+                "HTTP-Referer": window.location.href,
+                "X-Title": "Neon AI Chatbot",
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                model: "deepseek/deepseek-chat:free",
+                messages: [
+                  {
+                    role: "user",
+                    content: message,
+                  },
+                ],
+              }),
+            }
+          );
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const data = await response.json();
+
+          // Remove loading message
+          loadingElement.remove();
+
+          // Add bot response
+          const botMessage =
+            data.choices[0]?.message?.content ||
+            "Xin lỗi, tôi không thể trả lời câu hỏi này.";
+          addMessage(botMessage, "bot");
+        } catch (error) {
+          console.error("Error:", error);
+          loadingElement.remove();
+          addMessage(
+            "⚠️ Có lỗi xảy ra khi kết nối với AI. Vui lòng kiểm tra API Key và thử lại.",
+            "bot"
+          );
+        } finally {
+          isLoading = false;
+          sendButton.disabled = false;
+          messageInput.focus();
+        }
+      }
+
+      // Add message to chat
+      function addMessage(content, sender) {
+        const messageDiv = document.createElement("div");
+        messageDiv.className = `message ${sender}`;
+
+        const avatar = document.createElement("div");
+        avatar.className = "message-avatar";
+        avatar.textContent = sender === "user" ? "👤" : "🤖";
+
+        const messageContent = document.createElement("div");
+        messageContent.className = "message-content";
+        messageContent.textContent = content;
+
+        messageDiv.appendChild(avatar);
+        messageDiv.appendChild(messageContent);
+
+        chatMessages.appendChild(messageDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+
+        return messageDiv;
+      }
+
+      // Add loading message
+      function addLoadingMessage() {
+        const messageDiv = document.createElement("div");
+        messageDiv.className = "message bot";
+
+        const avatar = document.createElement("div");
+        avatar.className = "message-avatar";
+        avatar.textContent = "🤖";
+
+        const loadingDiv = document.createElement("div");
+        loadingDiv.className = "message-content";
+        loadingDiv.innerHTML = `
+                <div class="loading">
+                    <div class="loading-dot"></div>
+                    <div class="loading-dot"></div>
+                    <div class="loading-dot"></div>
+                </div>
+            `;
+
+        messageDiv.appendChild(avatar);
+        messageDiv.appendChild(loadingDiv);
+
+        chatMessages.appendChild(messageDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+
+        return messageDiv;
+      }
+
+      // Event listeners
+      sendButton.addEventListener("click", sendMessage);
+
+      messageInput.addEventListener("keypress", (e) => {
+        if (e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault();
+          sendMessage();
+        }
+      });
+
+      // Auto-focus on message input
+      messageInput.focus();
+
+      // API Key placeholder management
+      apiKeyInput.addEventListener("focus", () => {
+        if (apiKeyInput.type === "password") {
+          apiKeyInput.type = "text";
+        }
+      });
+
+      apiKeyInput.addEventListener("blur", () => {
+        if (apiKeyInput.value.trim()) {
+          apiKeyInput.type = "password";
+        }
+      });
+    </script>
+  </body>
+</html>
