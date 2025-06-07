@@ -1,9 +1,5 @@
 # Neon AI Chatbot 🎉
 
-> Trải nghiệm trò chuyện với AI thông minh trong giao diện tương lai 🤖
-
-![Neon AI Chatbot](screenshot.png)
-
 ## Mô tả
 
 Neon AI Chatbot là giao diện web nổi bật với hiệu ứng neon động, cho phép người dùng trò chuyện với AI thông qua OpenRouter API. Dự án mang đến trải nghiệm mượt mà, thiết kế bóng bẩy và dễ tuỳ biến.
